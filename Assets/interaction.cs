@@ -7,6 +7,13 @@ public class Interaction : MonoBehaviour
     public LayerMask interactionLayers;
 
     private GameObject currentInteractable; // Objekt s kojim trenutno možemo interagirati
+    private LucasMovement lucasMovement; // Referenca na skriptu LucasMovement
+
+    void Start()
+    {
+        // Dohvati komponentu LucasMovement iz istog objekta
+        lucasMovement = GetComponent<LucasMovement>();
+    }
 
     void Update()
     {
@@ -29,6 +36,9 @@ public class Interaction : MonoBehaviour
                     hit.collider.gameObject.GetComponent<letter>().openCloseLetter();
                     // Hide interaction text after interaction
                     interactionText.SetActive(false);
+                    // Disable player movement
+                    if(lucasMovement != null)
+                        lucasMovement.enabled = false;
                 }
             }
             //else, the interaction text is set false.
