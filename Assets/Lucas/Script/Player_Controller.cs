@@ -32,7 +32,7 @@ public class PlayerController : MonoBehaviour
 
     void Update()
     {
-        // Set the Speed in Animator based on movement magnitude
+       
         if (movement.magnitude != 0.0f)
         {
             
@@ -54,7 +54,7 @@ public class PlayerController : MonoBehaviour
             animator.SetBool("Walk", false);
         }
 
-        // Handle crouching and crouched walking
+       
         if (Input.GetKeyDown(KeyCode.C))
         {
             crouched = !crouched;
@@ -75,14 +75,14 @@ public class PlayerController : MonoBehaviour
 
     bool isGrounded = IsGrounded();
 
-    // Provjerava stanje skakanja
+    
     if (Input.GetKeyDown(KeyCode.Space) && isGrounded && !crouched && (Time.time - lastJumpTime > jumpCooldown))
     {
         Vector3 jumpDirection = Vector3.up * jumpForce;
-        // Ako je igrač u pokretu (hodanju ili sprintanju), dodaj silu naprijed
+        
         if (movement.magnitude > 0)
         {
-            jumpDirection += transform.forward * 0.5f;  // Možete prilagoditi ovu vrijednost za jači ili slabiji impuls naprijed
+            jumpDirection += transform.forward * 0.5f;  
         }
         rb.AddForce(jumpDirection, ForceMode.Impulse);
         animator.SetBool("Jump", true);
@@ -104,12 +104,12 @@ public class PlayerController : MonoBehaviour
         float moveVertical = Input.GetAxis("Vertical");
         movement = new Vector3(moveHorizontal, 0.0f, moveVertical);
 
-        // Handle movement and rotation
+        
         if (movement.magnitude > 0)
         {
             Quaternion targetRotation = Quaternion.LookRotation(movement);
             transform.rotation = Quaternion.Slerp(transform.rotation, targetRotation, Time.fixedDeltaTime * rotationSpeed);
-            //rb.MovePosition(transform.position + movement.normalized * walkSpeed * Time.fixedDeltaTime);
+            
         }
 
         if (jump)
@@ -120,15 +120,15 @@ public class PlayerController : MonoBehaviour
 
     private bool IsGrounded()
 {
-    float distanceToGround = 0.5f; // Increased distance
+    float distanceToGround = 0.5f; 
     Vector3 offset = new Vector3(0, 0.1f, 0);
     Vector3 start = transform.position + offset;
     Vector3 direction = Vector3.down;
 
-    // Visualize the Raycast    
+    
     Debug.DrawLine(start, start + direction * distanceToGround, Color.red);
 
-    // Perform the Raycast
+    
     return Physics.Raycast(start, direction, distanceToGround);
 }
 
