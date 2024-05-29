@@ -14,14 +14,16 @@ public class Enemy_AI : MonoBehaviour
 
     private Vector3 destPoint;
     private bool walkpointSet;
+    private bool isIdle = true;
     [SerializeField] private float range, walkSpeed = 1.0f, runSpeed = 2.5f;
 
     [SerializeField] float sightRange, attackRange;
     bool LucasInSight, LucasInAttackRange;
 
-    private float idleTime = 5.0f;
+    private float idleTime = 3.0f;
     private float walkTime = 7.0f;
     private float timeSinceLastTransition;
+    private bool isAttacking = false;
 
     void Start()
     {
@@ -29,6 +31,7 @@ public class Enemy_AI : MonoBehaviour
         Lucas = GameObject.Find("Lucas");
         animator = GetComponent<Animator>();
         timeSinceLastTransition = Time.time;
+        agent.isStopped = true; // Zaustavi agenta na početku
         animator.SetBool("Walk", false);
         animator.SetFloat("Run", 0.0f);
     }
@@ -38,25 +41,28 @@ public class Enemy_AI : MonoBehaviour
         LucasInSight = Physics.CheckSphere(transform.position, sightRange, LucasLayer);
         LucasInAttackRange = Physics.CheckSphere(transform.position, attackRange, LucasLayer);
 
-        if (!LucasInSight && !LucasInAttackRange)
+        if (isAttacking)
         {
-            Patrol();
+            // Ako napada, zaustavi agenta
+            agent.isStopped = true;
         }
-        else if (LucasInSight && !LucasInAttackRange)
+        else
         {
-            Chase(walkSpeed);
-        }
-        else if (LucasInSight && LucasInAttackRange)
-        {
-            Chase(runSpeed);
-        }
+            if (!LucasInSight && !LucasInAttackRange)
+            {
+                Patrol();
+            }
+            else if (LucasInSight && !LucasInAttackRange)
+            {
+                Chase(runSpeed); // Promijenjeno na runSpeed jer je trčanje kada vidi igrača
+            }
+            else if (LucasInSight && LucasInAttackRange)
+            {
+                Attack();
+            }
 
-        if (LucasInAttackRange)
-        {
-            Attack();
+            ManageAnimations();
         }
-
-        ManageAnimations();
     }
 
     void ManageAnimations()
@@ -64,29 +70,41 @@ public class Enemy_AI : MonoBehaviour
         float currentTime = Time.time;
         if (!LucasInSight)
         {
-            if (currentTime - timeSinceLastTransition > walkTime + idleTime)
+            if (isIdle)
             {
-                timeSinceLastTransition = currentTime;
-                animator.SetBool("Walk", true);
-                animator.SetFloat("Run", 0.0f);
+                if (currentTime - timeSinceLastTransition > idleTime)
+                {
+                    isIdle = false;
+                    timeSinceLastTransition = currentTime;
+                    animator.SetBool("Walk", true);
+                    agent.isStopped = false;
+                    agent.speed = walkSpeed; // Set agent speed to walk speed when walking
+                }
             }
-            else if (currentTime - timeSinceLastTransition > walkTime)
+            else
             {
-                animator.SetBool("Walk", false);
-                animator.SetFloat("Run", 0.0f);
+                if (currentTime - timeSinceLastTransition > walkTime)
+                {
+                    isIdle = true;
+                    timeSinceLastTransition = currentTime;
+                    animator.SetBool("Walk", false);
+                    agent.isStopped = true; // Stop the agent during idle
+                }
             }
         }
         else
         {
-            timeSinceLastTransition = Time.time - walkTime;
+            timeSinceLastTransition = Time.time;
+            isIdle = false;
         }
     }
 
     void Chase(float speed)
     {
+        agent.isStopped = false;
         agent.speed = speed;
-        animator.SetBool("Walk", speed == walkSpeed);
-        animator.SetFloat("Run", speed == runSpeed ? 1.0f : 0.0f);
+        animator.SetBool("Walk", false);
+        animator.SetFloat("Run", 1.0f);
         agent.SetDestination(Lucas.transform.position);
         RotateTowards(Lucas.transform);
     }
@@ -95,20 +113,32 @@ public class Enemy_AI : MonoBehaviour
     {
         if (!animator.GetCurrentAnimatorStateInfo(0).IsName("Attack"))
         {
+            isAttacking = true;
             animator.SetTrigger("Attack");
             agent.SetDestination(transform.position);
         }
     }
 
+    void OnAttackAnimationEnd() // Ovu funkciju treba pozvati na kraju animacije napada
+    {
+        isAttacking = false;
+        agent.isStopped = false;
+        // Resetiraj animacije
+        animator.ResetTrigger("Attack");
+    }
+
     void Patrol()
     {
-        if (!walkpointSet) SearchForDest();
-        if (walkpointSet)
+        if (!isIdle)
         {
-            agent.SetDestination(destPoint);
-            if (Vector3.Distance(transform.position, destPoint) < 10)
+            if (!walkpointSet) SearchForDest();
+            if (walkpointSet)
             {
-                walkpointSet = false;
+                agent.SetDestination(destPoint);
+                if (Vector3.Distance(transform.position, destPoint) < 10)
+                {
+                    walkpointSet = false;
+                }
             }
         }
     }
