@@ -550,7 +550,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: f547b9aadb5d4c84b87c14dd33cbdd2b, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  Lucas: {fileID: 1996291028}
+  Lucas: {fileID: 0}
   agent: {fileID: 551646225}
   groundLayer:
     serializedVersion: 2
@@ -1261,7 +1261,7 @@ MonoBehaviour:
   crouchSpeed: 1
   jumpForce: 4
   rotationSpeed: 10
-  big_lucas: {fileID: 1996291028}
+  Lucas: {fileID: 1996291028}
 --- !u!114 &1330620417
 MonoBehaviour:
   m_ObjectHideFlags: 0

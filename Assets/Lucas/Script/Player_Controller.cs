@@ -12,7 +12,7 @@ public class PlayerController : MonoBehaviour
     public float rotationSpeed = 10.0f;
 
     [SerializeField]
-    GameObject big_lucas;
+    GameObject Lucas;
 
 
     private Rigidbody rb;
@@ -24,7 +24,7 @@ public class PlayerController : MonoBehaviour
 
     void Start()
     {
-        rb = big_lucas.GetComponent<Rigidbody>();
+        rb = Lucas.GetComponent<Rigidbody>();
         animator = GetComponent<Animator>();
         jump = false;
         crouched = false;
