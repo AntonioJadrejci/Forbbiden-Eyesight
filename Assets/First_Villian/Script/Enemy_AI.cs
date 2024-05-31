@@ -32,12 +32,18 @@ public class EnemyAI : MonoBehaviour
         animator = GetComponent<Animator>();
         agent.isStopped = true;
         timeSinceLastTransition = Time.time;
+
+        // Initialize layer masks
+        whatIsGround = LayerMask.GetMask("Nasmesh");
+        whatIsPlayer = LayerMask.GetMask("Lucas");
     }
 
     void Update()
     {
         playerInSightRange = Physics.CheckSphere(transform.position, sightRange, whatIsPlayer);
         playerInAttackRange = Physics.CheckSphere(transform.position, attackRange, whatIsPlayer);
+
+        Debug.Log("Player in sight: " + playerInSightRange + ", Player in attack range: " + playerInAttackRange);
 
         if (!playerInSightRange && !playerInAttackRange)
             Patrol();
