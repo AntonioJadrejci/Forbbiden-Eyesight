@@ -549,7 +549,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: f547b9aadb5d4c84b87c14dd33cbdd2b, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  Lucas: {fileID: 946278566}
+  Lucas: {fileID: 1330620412}
   agent: {fileID: 551646225}
   whatIsGround:
     serializedVersion: 2
@@ -735,66 +735,6 @@ Transform:
   m_Children: []
   m_Father: {fileID: 1330620413}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!1 &946278566
-GameObject:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  serializedVersion: 6
-  m_Component:
-  - component: {fileID: 946278568}
-  - component: {fileID: 946278567}
-  m_Layer: 7
-  m_Name: Lucas
-  m_TagString: Untagged
-  m_Icon: {fileID: 0}
-  m_NavMeshLayer: 0
-  m_StaticEditorFlags: 0
-  m_IsActive: 1
---- !u!54 &946278567
-Rigidbody:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 946278566}
-  serializedVersion: 4
-  m_Mass: 1
-  m_Drag: 0
-  m_AngularDrag: 0.05
-  m_CenterOfMass: {x: 0, y: 0, z: 0}
-  m_InertiaTensor: {x: 1, y: 1, z: 1}
-  m_InertiaRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_IncludeLayers:
-    serializedVersion: 2
-    m_Bits: 0
-  m_ExcludeLayers:
-    serializedVersion: 2
-    m_Bits: 0
-  m_ImplicitCom: 1
-  m_ImplicitTensor: 1
-  m_UseGravity: 1
-  m_IsKinematic: 0
-  m_Interpolate: 0
-  m_Constraints: 0
-  m_CollisionDetection: 0
---- !u!4 &946278568
-Transform:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 946278566}
-  serializedVersion: 2
-  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 11.044442, y: 4.329236, z: 13.888859}
-  m_LocalScale: {x: 1, y: 1, z: 1}
-  m_ConstrainProportionsScale: 0
-  m_Children:
-  - {fileID: 1330620413}
-  m_Father: {fileID: 0}
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &963194225
 GameObject:
   m_ObjectHideFlags: 0
@@ -881,7 +821,7 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 963194225}
   serializedVersion: 2
-  m_LocalRotation: {x: 0.09853763, y: -2.4958031e-15, z: 2.421292e-16, w: 0.99513334}
+  m_LocalRotation: {x: 0.09853764, y: -0.000000012022004, z: 0.0000000011904132, w: 0.99513334}
   m_LocalPosition: {x: -1.5500011, y: 1.5181351, z: 1.9300032}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
@@ -1344,7 +1284,7 @@ MonoBehaviour:
   crouchSpeed: 1
   jumpForce: 4
   rotationSpeed: 10
-  Lucas: {fileID: 946278566}
+  Lucas: {fileID: 2019634556}
 --- !u!114 &1330620417
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1872,7 +1812,7 @@ PrefabInstance:
   serializedVersion: 2
   m_Modification:
     serializedVersion: 3
-    m_TransformParent: {fileID: 946278568}
+    m_TransformParent: {fileID: 2019634558}
     m_Modifications:
     - target: {fileID: -9070493210130169274, guid: c01769318dba1c94caaf8531d62dc2e9, type: 3}
       propertyPath: m_Layer
@@ -1892,15 +1832,15 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: c01769318dba1c94caaf8531d62dc2e9, type: 3}
       propertyPath: m_LocalPosition.x
-      value: -12.594443
+      value: -0.4343469
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: c01769318dba1c94caaf8531d62dc2e9, type: 3}
       propertyPath: m_LocalPosition.y
-      value: -4.311101
+      value: -1.5714833
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: c01769318dba1c94caaf8531d62dc2e9, type: 3}
       propertyPath: m_LocalPosition.z
-      value: -5.4588556
+      value: -1.816761
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: c01769318dba1c94caaf8531d62dc2e9, type: 3}
       propertyPath: m_LocalRotation.w
@@ -2398,7 +2338,7 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1542408098}
   serializedVersion: 2
-  m_LocalRotation: {x: 0.09853763, y: -2.4958031e-15, z: 2.421292e-16, w: 0.99513334}
+  m_LocalRotation: {x: 0.09853764, y: -0.000000012022004, z: 0.0000000011904132, w: 0.99513334}
   m_LocalPosition: {x: -1.5500011, y: 1.5181351, z: 1.9300032}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
@@ -2690,6 +2630,66 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: ac0b09e7857660247b1477e93731de29, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+--- !u!1 &2019634556
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 2019634558}
+  - component: {fileID: 2019634557}
+  m_Layer: 0
+  m_Name: Lucas
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!54 &2019634557
+Rigidbody:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2019634556}
+  serializedVersion: 4
+  m_Mass: 1
+  m_Drag: 0
+  m_AngularDrag: 0.05
+  m_CenterOfMass: {x: 0, y: 0, z: 0}
+  m_InertiaTensor: {x: 1, y: 1, z: 1}
+  m_InertiaRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ImplicitCom: 1
+  m_ImplicitTensor: 1
+  m_UseGravity: 1
+  m_IsKinematic: 0
+  m_Interpolate: 0
+  m_Constraints: 0
+  m_CollisionDetection: 0
+--- !u!4 &2019634558
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2019634556}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: -1.1156542, y: 1.5896183, z: 10.246764}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children:
+  - {fileID: 1330620413}
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &2127505861
 GameObject:
   m_ObjectHideFlags: 0
@@ -2803,5 +2803,5 @@ SceneRoots:
   - {fileID: 1542408100}
   - {fileID: 705507995}
   - {fileID: 520797369}
-  - {fileID: 946278568}
   - {fileID: 1200676438}
+  - {fileID: 2019634558}
