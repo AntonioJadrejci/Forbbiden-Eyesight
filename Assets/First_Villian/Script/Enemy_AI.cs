@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.AI;
 
-public class EnemyAI : MonoBehaviour
+public class Enemy_AI : MonoBehaviour
 {
     public GameObject Lucas; // Target player
     public NavMeshAgent agent; // Navigation agent
@@ -49,7 +49,7 @@ public class EnemyAI : MonoBehaviour
             Patrol();
         else if (playerInSightRange && !playerInAttackRange)
             ChasePlayer();
-        else if (playerInAttackRange)
+        else if (playerInAttackRange && playerInSightRange)
             AttackPlayer();
 
         ManageAnimations();
@@ -83,30 +83,42 @@ public class EnemyAI : MonoBehaviour
 
     void ChasePlayer()
     {
-        agent.speed = runSpeed;
-        agent.isStopped = false;
-        agent.SetDestination(Lucas.transform.position);
-
-        // Additional debug to check if the agent is correctly setting the destination
-        Debug.Log("Chasing player, setting destination to: " + Lucas.transform.position);
-
-        // Ensure the agent is not stuck
-        if (agent.isStopped)
+        if (!isAttacking)
         {
-            Debug.Log("Agent was stopped, restarting agent.");
+            agent.speed = runSpeed;
             agent.isStopped = false;
+            agent.SetDestination(Lucas.transform.position);
+
+            // Additional debug to check if the agent is correctly setting the destination
+            Debug.Log("Chasing player, setting destination to: " + Lucas.transform.position);
+
+            // Ensure the agent is not stuck
+            if (agent.isStopped)
+            {
+                Debug.Log("Agent was stopped, restarting agent.");
+                agent.isStopped = false;
+            }
         }
     }
 
     void AttackPlayer()
     {
-        agent.SetDestination(transform.position);
-        transform.LookAt(Lucas.transform);
-
-        if (!isAttacking)
+        // Check if the player is within attack range
+        if (Vector3.Distance(transform.position, Lucas.transform.position) <= attackRange)
         {
-            animator.SetTrigger("Attack");
-            isAttacking = true;
+            agent.SetDestination(transform.position);
+            transform.LookAt(Lucas.transform);
+
+            if (!isAttacking)
+            {
+                animator.SetTrigger("Attack");
+                isAttacking = true;
+                Debug.Log("Started attacking.");
+            }
+        }
+        else
+        {
+            ChasePlayer();
         }
     }
 
@@ -144,5 +156,19 @@ public class EnemyAI : MonoBehaviour
     public void OnAttackAnimationEnd()
     {
         isAttacking = false;
+        Debug.Log("Attack animation ended.");
+
+        // Ensure that the NavMeshAgent resumes properly
+        agent.isStopped = false;
+        if (playerInSightRange && !playerInAttackRange)
+        {
+            agent.speed = runSpeed;
+            ChasePlayer();
+        }
+        else if (!playerInSightRange && !playerInAttackRange)
+        {
+            agent.speed = walkSpeed;
+            Patrol();
+        }
     }
 }
