@@ -1,9 +1,10 @@
 fileFormatVersion: 2
-guid: b68994859af07724aa2584fc9acc74c1
+guid: 68156617c5dae074c91337e1fb2787aa
 MonoImporter:
   externalObjects: {}
   serializedVersion: 2
-  defaultReferences: []
+  defaultReferences:
+  - big_lucas: {fileID: 919132149155446097, guid: c01769318dba1c94caaf8531d62dc2e9, type: 3}
   executionOrder: 0
   icon: {instanceID: 0}
   userData: 
