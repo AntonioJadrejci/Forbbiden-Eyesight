@@ -1,5 +1,4 @@
-﻿using System.Collections;
-using System.Collections.Generic;
+using System.Collections;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -7,8 +6,9 @@ public class Keypad : MonoBehaviour
 {
     [SerializeField] private Text Ans;
     [SerializeField] private Animator Door;
+    [SerializeField] private GameObject canvas;
 
-    private string Answer = "123456";
+    private string Answer = "532";
 
     public void Number(int number)
     {
@@ -17,22 +17,19 @@ public class Keypad : MonoBehaviour
 
     public void Execute()
     {
-        if(Ans.text == Answer)
+        if (Ans.text == Answer)
         {
-            Ans.text = "Correct";
+            Ans.text = "RUN";
             Door.SetBool("Open", true);
-            StartCoroutine("StopDoor");
+
+            if (canvas != null)
+            {
+                canvas.SetActive(false);
+            }
         }
         else
         {
-            Ans.text = "Invalid";
+            Ans.text = "DEAD";
         }
-    }
-
-    IEnumerator StopDoor()
-    {
-        yield return new WaitForSeconds(0.5f);
-        Door.SetBool("Open", false);
-        Door.enabled = false;
     }
 }
