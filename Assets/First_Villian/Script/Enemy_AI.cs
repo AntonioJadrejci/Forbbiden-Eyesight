@@ -36,14 +36,17 @@ public class Enemy_AI : MonoBehaviour
         // Initialize layer masks
         whatIsGround = LayerMask.GetMask("Nasmesh");
         whatIsPlayer = LayerMask.GetMask("Lucas");
+
+        if (Lucas == null)
+        {
+            Debug.LogError("Lucas GameObject is not assigned in the Inspector.");
+        }
     }
 
     void Update()
     {
         playerInSightRange = Physics.CheckSphere(transform.position, sightRange, whatIsPlayer);
         playerInAttackRange = Physics.CheckSphere(transform.position, attackRange, whatIsPlayer);
-
-        Debug.Log("Player in sight: " + playerInSightRange + ", Player in attack range: " + playerInAttackRange);
 
         if (!playerInSightRange && !playerInAttackRange)
             Patrol();
@@ -89,13 +92,9 @@ public class Enemy_AI : MonoBehaviour
             agent.isStopped = false;
             agent.SetDestination(Lucas.transform.position);
 
-            // Additional debug to check if the agent is correctly setting the destination
-            Debug.Log("Chasing player, setting destination to: " + Lucas.transform.position);
-
             // Ensure the agent is not stuck
             if (agent.isStopped)
             {
-                Debug.Log("Agent was stopped, restarting agent.");
                 agent.isStopped = false;
             }
         }
@@ -113,7 +112,6 @@ public class Enemy_AI : MonoBehaviour
             {
                 animator.SetTrigger("Attack");
                 isAttacking = true;
-                Debug.Log("Started attacking.");
             }
         }
         else
@@ -156,7 +154,6 @@ public class Enemy_AI : MonoBehaviour
     public void OnAttackAnimationEnd()
     {
         isAttacking = false;
-        Debug.Log("Attack animation ended.");
 
         // Ensure that the NavMeshAgent resumes properly
         agent.isStopped = false;
