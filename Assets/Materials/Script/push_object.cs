@@ -6,11 +6,11 @@ public class push_object : MonoBehaviour
     public float objectMass = 500f;
     public float pushAtMass = 100f;
     public float pushingTime = 3f;
-    public float forceToPush = 500f;
+    public float forceToPush = 300f;
 
     private AudioSource audioSource;
     private Animator lucasAnimator;
-    public GameObject Lucas; 
+    public GameObject Lucas;
 
     private bool isPushing = false;
     private bool playerNearby = false;
@@ -69,19 +69,13 @@ public class push_object : MonoBehaviour
             playerNearby = true;
             if (isPushing && lucasAnimator != null && lucasAnimator.GetBool("Push")) // Check if the push animation is active
             {
-                Rigidbody rb = collision.collider.GetComponent<Rigidbody>();
+                Vector3 pushDirection = Lucas.transform.forward;
 
-                if (rb != null && rb.mass <= pushAtMass)
+                rb.AddForce(pushDirection * forceToPush * Time.deltaTime, ForceMode.VelocityChange);
+
+                if (pushSound != null && audioSource != null && !audioSource.isPlaying)
                 {
-                    Vector3 pushDirection = collision.contacts[0].point - transform.position;
-                    pushDirection = -pushDirection.normalized;
-
-                    rb.AddForce(pushDirection * forceToPush * Time.deltaTime, ForceMode.Impulse);
-
-                    if (pushSound != null && audioSource != null && !audioSource.isPlaying)
-                    {
-                        audioSource.PlayOneShot(pushSound);
-                    }
+                    audioSource.PlayOneShot(pushSound);
                 }
             }
         }

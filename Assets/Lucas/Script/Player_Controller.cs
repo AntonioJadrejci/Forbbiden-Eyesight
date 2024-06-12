@@ -17,6 +17,7 @@ public class PlayerController : MonoBehaviour
     private bool crouched;
     private bool jump;
     private bool isPushing;
+    private bool climbingLadder; // New variable for climbing
 
     void Start()
     {
@@ -29,6 +30,7 @@ public class PlayerController : MonoBehaviour
         jump = false;
         crouched = false;
         isPushing = false;
+        climbingLadder = false; // Initialize climbingLadder
     }
 
     void Update()
@@ -50,7 +52,7 @@ public class PlayerController : MonoBehaviour
             animator.SetBool("Walk", false);
         }
 
-        if (!isPushing)
+        if (!isPushing && !climbingLadder)
         {
             if (movement.magnitude != 0.0f)
             {
@@ -105,14 +107,44 @@ public class PlayerController : MonoBehaviour
                 jump = false;
             }
         }
+
+        if (climbingLadder)
+        {
+            if (Input.GetKey(KeyCode.W))
+            {
+                float climbSpeed = 2.0f;
+                movement = new Vector3(0, climbSpeed, 0);
+                rb.velocity = movement;
+                animator.SetBool("Climbing_Ladder", true); // Trigger climbing animation
+            }
+            else
+            {
+                rb.velocity = Vector3.zero;
+                animator.SetBool("Climbing_Ladder", false); // Stop climbing animation if not pressing W
+            }
+        }
+        else
+        {
+            animator.SetBool("Climbing_Ladder", false);
+        }
     }
 
     private void FixedUpdate()
     {
-        if (!isPushing && movement.magnitude > 0)
+        if (climbingLadder)
         {
-            Quaternion targetRotation = Quaternion.LookRotation(movement);
-            transform.rotation = Quaternion.Slerp(transform.rotation, targetRotation, Time.fixedDeltaTime * rotationSpeed);
+            rb.useGravity = false;
+            rb.velocity = movement;
+        }
+        else
+        {
+            rb.useGravity = true;
+
+            if (!isPushing && movement.magnitude > 0)
+            {
+                Quaternion targetRotation = Quaternion.LookRotation(movement);
+                transform.rotation = Quaternion.Slerp(transform.rotation, targetRotation, Time.fixedDeltaTime * rotationSpeed);
+            }
         }
 
         if (jump)
@@ -129,5 +161,26 @@ public class PlayerController : MonoBehaviour
         Vector3 direction = Vector3.down;
         Debug.DrawLine(start, start + direction * distanceToGround, Color.red);
         return Physics.Raycast(start, direction, distanceToGround);
+    }
+
+    private void OnTriggerEnter(Collider other)
+    {
+        if (other.gameObject.CompareTag("Ladder"))
+        {
+            climbingLadder = true;
+            rb.velocity = Vector3.zero; // Stop any previous movement
+            rb.isKinematic = true; // Set Rigidbody to kinematic
+            Debug.Log("Entered Ladder Trigger");
+        }
+    }
+
+    private void OnTriggerExit(Collider other)
+    {
+        if (other.gameObject.CompareTag("Ladder"))
+        {
+            climbingLadder = false;
+            rb.isKinematic = false; // Reset Rigidbody to non-kinematic
+            Debug.Log("Exited Ladder Trigger");
+        }
     }
 }
