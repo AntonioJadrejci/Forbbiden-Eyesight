@@ -9,17 +9,16 @@ public class enemy_ai_v3 : MonoBehaviour
     [SerializeField] float walkSpeed = 5f;
     [SerializeField] float chaseSpeed = 8f;
     [SerializeField] float sightDistance = 10f;
-    [SerializeField] float attackRange = 7f; // Increased attack range for ability
+    [SerializeField] float attackRange = 7f;
     [SerializeField] float rotationSpeed = 5f;
-    [SerializeField] float patrolRadius = 10f; // Patrol radius for random points
-    [SerializeField] float minIdleTime = 3f; // Minimum idle time
-    [SerializeField] float maxIdleTime = 4f; // Maximum idle time
+    [SerializeField] float patrolRadius = 10f;
+    [SerializeField] float minIdleTime = 3f;
+    [SerializeField] float maxIdleTime = 4f;
 
     [SerializeField] AudioClip idleSound;
     [SerializeField] AudioClip patrolSound;
     [SerializeField] AudioClip chaseSound;
     [SerializeField] AudioClip attackSound;
-    AudioSource audioSource;
 
     float idleTimer = 0;
     float distanceToTarget = Mathf.Infinity;
@@ -27,6 +26,7 @@ public class enemy_ai_v3 : MonoBehaviour
 
     NavMeshAgent navMeshAgent;
     Animator animator;
+    AudioSource audioSource;
 
     public enum EnemyState { Idle, Patrol, Chase, Attack }
     public EnemyState currentState = EnemyState.Idle;
@@ -36,14 +36,37 @@ public class enemy_ai_v3 : MonoBehaviour
         navMeshAgent = GetComponent<NavMeshAgent>();
         animator = GetComponent<Animator>();
         audioSource = GetComponent<AudioSource>();
+
+        if (target == null)
+        {
+            Debug.LogError("Target is not assigned. Please assign a target Transform in the Inspector.");
+        }
+        if (navMeshAgent == null)
+        {
+            Debug.LogError("NavMeshAgent is not assigned. Please add a NavMeshAgent component to the GameObject.");
+        }
+        if (animator == null)
+        {
+            Debug.LogError("Animator is not assigned. Please add an Animator component to the GameObject.");
+        }
+        if (audioSource == null)
+        {
+            Debug.LogWarning("AudioSource is not assigned. Please add an AudioSource component to the GameObject if you want to play sounds.");
+        }
+
         SetRandomIdleTime();
         SetRandomDestination();
     }
 
     void Update()
     {
+        if (target == null || navMeshAgent == null || animator == null)
+        {
+            Debug.LogError("One or more required components are missing.");
+            return;
+        }
+
         distanceToTarget = Vector3.Distance(target.position, transform.position);
-        Debug.Log("Current State: " + currentState); // Debug log for current state
 
         switch (currentState)
         {
@@ -64,82 +87,58 @@ public class enemy_ai_v3 : MonoBehaviour
 
     void HandleIdleState()
     {
-        Debug.Log("State: Idle"); // Debug log for Idle state
         idleTimer += Time.deltaTime;
-        animator.SetBool("Walking", false);
-        PlaySound(idleSound);
-
         if (idleTimer >= currentIdleTime)
         {
             SetRandomDestination();
             currentState = EnemyState.Patrol;
         }
-
+        animator.SetBool("Walking", false);
+        PlaySound(idleSound);
         CheckPlayerDetection();
     }
 
     void HandlePatrolState()
     {
-        Debug.Log("State: Patrol"); // Debug log for Patrol state
-        animator.SetBool("Walking", true);
-        PlaySound(patrolSound);
-
         if (navMeshAgent.remainingDistance <= navMeshAgent.stoppingDistance)
         {
             SetRandomIdleTime();
             currentState = EnemyState.Idle;
         }
-
+        animator.SetBool("Walking", true);
+        PlaySound(patrolSound);
         CheckPlayerDetection();
     }
 
     void HandleChaseState()
     {
-        Debug.Log("State: Chase"); // Debug log for Chase state
-        animator.SetBool("Walking", true);
         navMeshAgent.speed = chaseSpeed;
         navMeshAgent.SetDestination(target.position);
-        FaceTarget();
-        PlaySound(chaseSound);
-
         if (distanceToTarget > sightDistance)
         {
             SetRandomDestination();
             currentState = EnemyState.Patrol;
         }
-
         if (distanceToTarget <= attackRange)
         {
             currentState = EnemyState.Attack;
         }
+        animator.SetBool("Walking", true);
+        PlaySound(chaseSound);
+        FaceTarget();
     }
 
     void HandleAttackState()
     {
-        Debug.Log("State: Attack"); // Debug log for Attack state
-        animator.SetBool("Walking", false);
-        animator.SetTrigger("Attack");
-        AttackTarget();
-        PlaySound(attackSound);
-
         if (distanceToTarget > attackRange)
         {
             currentState = EnemyState.Chase;
         }
-    }
-
-    void AttackTarget()
-    {
+        animator.SetBool("Walking", false);
+        animator.SetTrigger("Attack");
+        PlaySound(attackSound);
+        navMeshAgent.SetDestination(transform.position); // Stop moving
         FaceTarget();
-        Debug.Log("Attacking Target"); // Debug log for attacking
-        if (distanceToTarget <= attackRange)
-        {
-            navMeshAgent.velocity = Vector3.zero;
-        }
-        else
-        {
-            currentState = EnemyState.Chase;
-        }
     }
 
     void CheckPlayerDetection()
@@ -151,7 +150,6 @@ public class enemy_ai_v3 : MonoBehaviour
         {
             if (hit.collider.CompareTag("Lucas"))
             {
-                Debug.Log("Player Detected: " + hit.collider.name); // Debug log for player detection
                 currentState = EnemyState.Chase;
             }
         }
@@ -159,10 +157,9 @@ public class enemy_ai_v3 : MonoBehaviour
 
     void FaceTarget()
     {
-        Vector3 direction = (target.position - transform.position);
+        Vector3 direction = (target.position - transform.position).normalized;
         Quaternion lookRotation = Quaternion.LookRotation(new Vector3(direction.x, 0f, direction.z));
         transform.rotation = Quaternion.Slerp(transform.rotation, lookRotation, Time.deltaTime * rotationSpeed);
-        Debug.Log("Facing Target"); // Debug log for facing target
     }
 
     void PlaySound(AudioClip soundClip)
@@ -183,11 +180,6 @@ public class enemy_ai_v3 : MonoBehaviour
         {
             navMeshAgent.SetDestination(navHit.position);
             navMeshAgent.speed = walkSpeed;
-            Debug.Log("New Patrol Destination: " + navHit.position); // Debug log for new patrol destination
-        }
-        else
-        {
-            Debug.LogWarning("Failed to find a valid NavMesh position for random patrol.");
         }
     }
 
