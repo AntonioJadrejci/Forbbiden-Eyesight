@@ -5,167 +5,199 @@ using UnityEngine.AI;
 
 public class Enemy_AI : MonoBehaviour
 {
-    public GameObject Lucas; // Target player
-    public NavMeshAgent agent; // Navigation agent
+    [SerializeField] Transform target;
+    [SerializeField] float walkSpeed = 5f;
+    [SerializeField] float chaseSpeed = 8f;
+    [SerializeField] float sightDistance = 10f;
+    [SerializeField] float attackRange = 7f;
+    [SerializeField] float rotationSpeed = 5f;
+    [SerializeField] float patrolRadius = 10f;
+    [SerializeField] float minIdleTime = 3f;
+    [SerializeField] float maxIdleTime = 4f;
 
-    [SerializeField] LayerMask whatIsGround, whatIsPlayer; // Detection layers
+    [SerializeField] AudioClip idleSound;
+    [SerializeField] AudioClip patrolSound;
+    [SerializeField] AudioClip chaseSound;
+    [SerializeField] AudioClip attackSound;
 
-    Animator animator; // Animator for controlling animations
+    float idleTimer = 0;
+    float distanceToTarget = Mathf.Infinity;
+    float currentIdleTime;
 
-    private Vector3 walkPoint; // Random walk point
-    private bool walkPointSet;
-    private float walkPointRange = 10f; // Range for random walk
+    NavMeshAgent navMeshAgent;
+    Animator animator;
+    AudioSource audioSource;
 
-    [SerializeField] private float walkSpeed = 1.0f, runSpeed = 2.5f; // Movement speeds
-    [SerializeField] private float sightRange, attackRange; // Detection ranges
-    private bool playerInSightRange, playerInAttackRange;
-
-    private bool isIdle = true;
-    private float idleTime = 3.0f, walkTime = 5.0f; // Times for state transitions
-    private float timeSinceLastTransition; // Timer tracking
-
-    private bool isAttacking = false;
+    public enum EnemyState { Idle, Patrol, Chase, Attack }
+    public EnemyState currentState = EnemyState.Idle;
 
     void Start()
     {
-        agent = GetComponent<NavMeshAgent>();
+        navMeshAgent = GetComponent<NavMeshAgent>();
         animator = GetComponent<Animator>();
-        agent.isStopped = true;
-        timeSinceLastTransition = Time.time;
+        audioSource = GetComponent<AudioSource>();
 
-        // Initialize layer masks
-        whatIsGround = LayerMask.GetMask("Nasmesh");
-        whatIsPlayer = LayerMask.GetMask("Lucas");
-
-        if (Lucas == null)
+        if (target == null)
         {
-            Debug.LogError("Lucas GameObject is not assigned in the Inspector.");
+            Debug.LogError("Target is not assigned. Please assign a target Transform in the Inspector.");
         }
+        if (navMeshAgent == null)
+        {
+            Debug.LogError("NavMeshAgent is not assigned. Please add a NavMeshAgent component to the GameObject.");
+        }
+        if (animator == null)
+        {
+            Debug.LogError("Animator is not assigned. Please add an Animator component to the GameObject.");
+        }
+        if (audioSource == null)
+        {
+            Debug.LogWarning("AudioSource is not assigned. Please add an AudioSource component to the GameObject if you want to play sounds.");
+        }
+
+        SetRandomIdleTime();
+        SetRandomDestination();
     }
 
     void Update()
     {
-        playerInSightRange = Physics.CheckSphere(transform.position, sightRange, whatIsPlayer);
-        playerInAttackRange = Physics.CheckSphere(transform.position, attackRange, whatIsPlayer);
-
-        if (!playerInSightRange && !playerInAttackRange)
-            Patrol();
-        else if (playerInSightRange && !playerInAttackRange)
-            ChasePlayer();
-        else if (playerInAttackRange && playerInSightRange)
-            AttackPlayer();
-
-        ManageAnimations();
-    }
-
-    void Patrol()
-    {
-        if (!walkPointSet) SearchWalkPoint();
-
-        if (walkPointSet)
+        if (target == null || navMeshAgent == null || animator == null)
         {
-            agent.SetDestination(walkPoint);
-            Vector3 distanceToWalkPoint = transform.position - walkPoint;
-
-            if (distanceToWalkPoint.magnitude < 1f)
-                walkPointSet = false;
+            Debug.LogError("One or more required components are missing.");
+            return;
         }
 
-        TransitionBetweenStates();
-    }
+        distanceToTarget = Vector3.Distance(target.position, transform.position);
 
-    void SearchWalkPoint()
-    {
-        float randomZ = Random.Range(-walkPointRange, walkPointRange);
-        float randomX = Random.Range(-walkPointRange, walkPointRange);
-        walkPoint = new Vector3(transform.position.x + randomX, transform.position.y, transform.position.z + randomZ);
-
-        if (Physics.Raycast(walkPoint, -transform.up, 2f, whatIsGround))
-            walkPointSet = true;
-    }
-
-    void ChasePlayer()
-    {
-        if (!isAttacking)
+        switch (currentState)
         {
-            agent.speed = runSpeed;
-            agent.isStopped = false;
-            agent.SetDestination(Lucas.transform.position);
+            case EnemyState.Idle:
+                HandleIdleState();
+                break;
+            case EnemyState.Patrol:
+                HandlePatrolState();
+                break;
+            case EnemyState.Chase:
+                HandleChaseState();
+                break;
+            case EnemyState.Attack:
+                HandleAttackState();
+                break;
+        }
+    }
 
-            // Ensure the agent is not stuck
-            if (agent.isStopped)
+    void HandleIdleState()
+    {
+        idleTimer += Time.deltaTime;
+        if (idleTimer >= currentIdleTime)
+        {
+            SetRandomDestination();
+            currentState = EnemyState.Patrol;
+        }
+        animator.SetBool("Walk", false);
+        animator.SetFloat("Run", 0f);
+        PlaySound(idleSound);
+        CheckPlayerDetection();
+    }
+
+    void HandlePatrolState()
+    {
+        if (navMeshAgent.remainingDistance <= navMeshAgent.stoppingDistance)
+        {
+            SetRandomIdleTime();
+            currentState = EnemyState.Idle;
+        }
+        animator.SetBool("Walk", true);
+        animator.SetFloat("Run", 0f);
+        PlaySound(patrolSound);
+        CheckPlayerDetection();
+    }
+
+    void HandleChaseState()
+    {
+        navMeshAgent.speed = chaseSpeed;
+        navMeshAgent.SetDestination(target.position);
+        if (distanceToTarget > sightDistance)
+        {
+            SetRandomDestination();
+            currentState = EnemyState.Patrol;
+        }
+        if (distanceToTarget <= attackRange)
+        {
+            currentState = EnemyState.Attack;
+        }
+        animator.SetBool("Walk", false);
+        animator.SetFloat("Run", 1f);
+        PlaySound(chaseSound);
+        FaceTarget();
+    }
+
+    void HandleAttackState()
+    {
+        if (distanceToTarget > attackRange)
+        {
+            currentState = EnemyState.Chase;
+        }
+        animator.SetBool("Walk", false);
+        animator.SetFloat("Run", 0f);
+        animator.SetTrigger("Attack");
+        PlaySound(attackSound);
+        navMeshAgent.SetDestination(transform.position); // Stop moving
+        FaceTarget();
+    }
+
+    void CheckPlayerDetection()
+    {
+        RaycastHit hit;
+        Vector3 playerDirection = target.position - transform.position;
+
+        if (Physics.Raycast(transform.position, playerDirection.normalized, out hit, sightDistance))
+        {
+            if (hit.collider.CompareTag("Lucas"))
             {
-                agent.isStopped = false;
+                currentState = EnemyState.Chase;
             }
         }
     }
 
-    void AttackPlayer()
+    void FaceTarget()
     {
-        // Check if the player is within attack range
-        if (Vector3.Distance(transform.position, Lucas.transform.position) <= attackRange)
-        {
-            agent.SetDestination(transform.position);
-            transform.LookAt(Lucas.transform);
+        Vector3 direction = (target.position - transform.position).normalized;
+        Quaternion lookRotation = Quaternion.LookRotation(new Vector3(direction.x, 0f, direction.z));
+        transform.rotation = Quaternion.Slerp(transform.rotation, lookRotation, Time.deltaTime * rotationSpeed);
+    }
 
-            if (!isAttacking)
-            {
-                animator.SetTrigger("Attack");
-                isAttacking = true;
-            }
-        }
-        else
+    void PlaySound(AudioClip soundClip)
+    {
+        if (audioSource != null && (!audioSource.isPlaying || audioSource.clip != soundClip))
         {
-            ChasePlayer();
+            audioSource.clip = soundClip;
+            audioSource.Play();
         }
     }
 
-    void ManageAnimations()
+    void SetRandomDestination()
     {
-        animator.SetBool("Walk", agent.velocity.magnitude > 0.1f && !isAttacking);
-        animator.SetFloat("Run", ((agent.speed == runSpeed) && (agent.velocity.magnitude > 0.1f)) ? 1.0f : 0.0f);
-    }
-
-    void TransitionBetweenStates()
-    {
-        float timePassed = Time.time - timeSinceLastTransition;
-
-        if (isIdle)
+        Vector3 randomDirection = Random.insideUnitSphere * patrolRadius;
+        randomDirection += transform.position;
+        NavMeshHit navHit;
+        if (NavMesh.SamplePosition(randomDirection, out navHit, patrolRadius, NavMesh.AllAreas))
         {
-            if (timePassed > idleTime)
-            {
-                isIdle = false;
-                agent.isStopped = false;
-                agent.speed = walkSpeed;
-                timeSinceLastTransition = Time.time;
-            }
-        }
-        else
-        {
-            if (timePassed > walkTime || agent.remainingDistance < 1f)
-            {
-                isIdle = true;
-                agent.isStopped = true;
-                timeSinceLastTransition = Time.time;
-            }
+            navMeshAgent.SetDestination(navHit.position);
+            navMeshAgent.speed = walkSpeed;
         }
     }
 
-    public void OnAttackAnimationEnd()
+    void SetRandomIdleTime()
     {
-        isAttacking = false;
+        currentIdleTime = Random.Range(minIdleTime, maxIdleTime);
+        idleTimer = 0;
+    }
 
-        // Ensure that the NavMeshAgent resumes properly
-        agent.isStopped = false;
-        if (playerInSightRange && !playerInAttackRange)
-        {
-            agent.speed = runSpeed;
-            ChasePlayer();
-        }
-        else if (!playerInSightRange && !playerInAttackRange)
-        {
-            agent.speed = walkSpeed;
-            Patrol();
-        }
+    void OnDrawGizmosSelected()
+    {
+        Gizmos.color = Color.red;
+        Gizmos.DrawWireSphere(transform.position, sightDistance);
+        Gizmos.color = Color.blue;
+        Gizmos.DrawWireSphere(transform.position, attackRange);
     }
 }

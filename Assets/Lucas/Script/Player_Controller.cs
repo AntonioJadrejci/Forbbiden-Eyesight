@@ -19,14 +19,26 @@ public class PlayerController : MonoBehaviour
     private bool isPushing;
     private bool climbingLadder; // New variable for climbing
 
+    private AudioSource audioSource;
+    public AudioClip walkSound;
+    public AudioClip runSound;
+    public AudioClip jumpSound;
+
     void Start()
     {
         rb = Lucas.GetComponent<Rigidbody>();
         animator = Lucas.GetComponentInChildren<Animator>();
+        audioSource = Lucas.GetComponent<AudioSource>(); // Correctly reference the AudioSource on Lucas
+
         if (animator == null)
         {
             Debug.LogError("Animator component not found on the Lucas GameObject or its children.");
         }
+        if (audioSource == null)
+        {
+            Debug.LogError("AudioSource component not found on the Lucas GameObject.");
+        }
+
         jump = false;
         crouched = false;
         isPushing = false;
@@ -60,17 +72,20 @@ public class PlayerController : MonoBehaviour
                 {
                     animator.SetFloat("Speed", movement.magnitude);
                     animator.SetBool("Walk", false);
+                    PlaySound(runSound);
                 }
                 else
                 {
                     animator.SetFloat("Speed", 0.0f);
                     animator.SetBool("Walk", true);
+                    PlaySound(walkSound);
                 }
             }
             else
             {
                 animator.SetFloat("Speed", 0.0f);
                 animator.SetBool("Walk", false);
+                StopSound();
             }
 
             if (Input.GetKeyDown(KeyCode.C))
@@ -82,6 +97,7 @@ public class PlayerController : MonoBehaviour
             if (crouched)
             {
                 animator.SetFloat("Crouched_Walking", movement.magnitude * crouchSpeed);
+                PlaySound(walkSound); // Crouch walking uses the same sound as walking
             }
             else
             {
@@ -98,6 +114,7 @@ public class PlayerController : MonoBehaviour
                 }
                 rb.AddForce(jumpDirection, ForceMode.Impulse);
                 animator.SetBool("Jump", true);
+                PlaySound(jumpSound);
                 jump = true;
                 lastJumpTime = Time.time;
             }
@@ -115,12 +132,13 @@ public class PlayerController : MonoBehaviour
                 float climbSpeed = 2.0f;
                 movement = new Vector3(0, climbSpeed, 0);
                 rb.velocity = movement;
-                animator.SetBool("Climbing_Ladder", true); // Trigger climbing animation
+                animator.SetBool("Climbing_Ladder", true);
+                StopSound(); // Stop other sounds when climbing
             }
             else
             {
                 rb.velocity = Vector3.zero;
-                animator.SetBool("Climbing_Ladder", false); // Stop climbing animation if not pressing W
+                animator.SetBool("Climbing_Ladder", false);
             }
         }
         else
@@ -168,8 +186,8 @@ public class PlayerController : MonoBehaviour
         if (other.gameObject.CompareTag("Ladder"))
         {
             climbingLadder = true;
-            rb.velocity = Vector3.zero; // Stop any previous movement
-            rb.isKinematic = true; // Set Rigidbody to kinematic
+            rb.velocity = Vector3.zero;
+            rb.isKinematic = true;
             Debug.Log("Entered Ladder Trigger");
         }
     }
@@ -179,8 +197,25 @@ public class PlayerController : MonoBehaviour
         if (other.gameObject.CompareTag("Ladder"))
         {
             climbingLadder = false;
-            rb.isKinematic = false; // Reset Rigidbody to non-kinematic
+            rb.isKinematic = false;
             Debug.Log("Exited Ladder Trigger");
+        }
+    }
+
+    private void PlaySound(AudioClip clip)
+    {
+        if (audioSource != null && audioSource.clip != clip)
+        {
+            audioSource.clip = clip;
+            audioSource.Play();
+        }
+    }
+
+    private void StopSound()
+    {
+        if (audioSource != null && audioSource.isPlaying)
+        {
+            audioSource.Stop();
         }
     }
 }
